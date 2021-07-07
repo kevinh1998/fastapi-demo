@@ -1,5 +1,5 @@
 # Fastapi-demo
-A fastapi demo
+A fastapi demo with postgres using docker-compose 
 
 ## Development guide
 
@@ -27,6 +27,12 @@ You can re-use the above container and simply mount your locally checked-out rep
 
     ```bash
     docker exec -it <container-name> bash
+    ```
+    
+1. When in the container's shell use the following to run the tests.
+
+    ```bash
+    pytest
     ```
 
 ### Rebuilding the containers
