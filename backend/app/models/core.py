@@ -6,7 +6,7 @@ class CoreModel(BaseModel):
     Any common logic to be shared by all models goes here.
     """
 
-    pass
+    name: str
 
 
 class IDModelMixin(BaseModel):

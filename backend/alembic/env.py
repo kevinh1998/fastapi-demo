@@ -9,10 +9,14 @@ import logging
 # we're appending the app directory to our path here so that we can import config easily
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[3]))
 
-from app.core.config import DATABASE_URL  # noqa
+from backend.app.core.config import settings  # noqa
 
 # Alembic Config object, which provides access to values within the .ini file
 config = alembic.context.config
+
+from backend.app.db.base import Base  # noqa
+
+target_metadata = Base.metadata
 
 # Interpret the config file for logging
 fileConfig(config.config_file_name)
@@ -24,7 +28,7 @@ def run_migrations_online() -> None:
     Run migrations in 'online' mode
     """
     connectable = config.attributes.get("connection", None)
-    config.set_main_option("sqlalchemy.url", str(DATABASE_URL))
+    config.set_main_option("sqlalchemy.url", str(settings.SQLALCHEMY_DATABASE_URI))
 
     if connectable is None:
         connectable = engine_from_config(
@@ -44,7 +48,7 @@ def run_migrations_offline() -> None:
     """
     Run migrations in 'offline' mode.
     """
-    alembic.context.configure(url=str(DATABASE_URL))
+    alembic.context.configure(url=str(settings.SQLALCHEMY_DATABASE_URI))
 
     with alembic.context.begin_transaction():
         alembic.context.run_migrations()

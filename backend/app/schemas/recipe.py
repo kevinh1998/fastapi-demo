@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from base import Base
+from app.db.base_class import Base
 
 
 class Recipe(Base):
@@ -11,4 +11,4 @@ class Recipe(Base):
     cooking_time = Column(Integer, nullable=False)
     persons = Column(String, nullable=False)
     actions = Column(String, nullable=False)
-    ingredients = relationship("RecipeIngredient", back_populates="recipe_id")
+    ingredients = relationship("RecipeIngredient", back_populates="recipe")

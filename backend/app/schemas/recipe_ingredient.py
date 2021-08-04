@@ -2,10 +2,11 @@ from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.orm import relationship
 
-from base import Base
+from app.db.base_class import Base
 
 
 class RecipeIngredient(Base):
+    __tablename__ = "recipe_ingredient"
     id = Column(Integer, primary_key=True, index=True, unique=True, nullable=False)
     value = Column(Numeric(10, 4), nullable=True)
     measure = Column(String, nullable=True)
