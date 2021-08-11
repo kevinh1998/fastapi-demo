@@ -22,17 +22,18 @@ class RecipeRepository(BaseRepository):
                 actions=recipe_in.actions,
             )
             async with session.begin():
-                ingredients = []
                 for i in recipe_in.ingredients:
-                    ingredient = IngredientSchema(name=i.name)
-                    ingredients.append(ingredient)
                     recipe_ingredient = RecipeIngredientSchema(
                         value=i.value, measure=i.measure
                     )
+                    stmt = select(IngredientSchema).filter_by(name=i.name)
+                    result = await session.execute(stmt)
+                    ingredient = result.scalars().first()
+                    if not ingredient:
+                        ingredient = IngredientSchema(name=i.name)
+                        session.add(ingredient)
                     recipe_ingredient.ingredient = ingredient
                     recipe.ingredients.append(recipe_ingredient)
-                session.add_all(ingredients)
-
             async with session.begin():
                 session.add(recipe)
         return recipe_in
