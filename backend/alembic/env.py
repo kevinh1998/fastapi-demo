@@ -1,20 +1,19 @@
-import pathlib
+import os
 import sys
-import alembic
-from sqlalchemy import engine_from_config, pool
+import pathlib
 
+from alembic import context
+from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
+
 import logging
 
-# we're appending the app directory to our path here so that we can import config easily
-sys.path.append(str(pathlib.Path(__file__).resolve().parents[3]))
-
-from backend.app.core.config import settings  # noqa
-
 # Alembic Config object, which provides access to values within the .ini file
-config = alembic.context.config
+config = context.config
 
-from backend.app.db.base import Base  # noqa
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
+
+from app.db.base import Base  # noqa
 
 target_metadata = Base.metadata
 
@@ -23,38 +22,49 @@ fileConfig(config.config_file_name)
 logger = logging.getLogger("alembic.env")
 
 
+def get_url():
+    user = os.getenv("POSTGRES_USER", "postgres")
+    password = os.getenv("POSTGRES_PASSWORD", "")
+    server = os.getenv("POSTGRES_SERVER", "db")
+    db = os.getenv("POSTGRES_DB", "app")
+    return f"postgresql://{user}:{password}@{server}/{db}"
+
+
 def run_migrations_online() -> None:
     """
     Run migrations in 'online' mode
     """
-    connectable = config.attributes.get("connection", None)
-    config.set_main_option("sqlalchemy.url", str(settings.SQLALCHEMY_DATABASE_URI))
-
-    if connectable is None:
-        connectable = engine_from_config(
-            config.get_section(config.config_ini_section),
-            prefix="sqlalchemy.",
-            poolclass=pool.NullPool,
-        )
+    configuration = config.get_section(config.config_ini_section)
+    configuration["sqlalchemy.url"] = get_url()
+    connectable = engine_from_config(
+        configuration,
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
 
     with connectable.connect() as connection:
-        alembic.context.configure(connection=connection, target_metadata=None)
+        context.configure(
+            connection=connection, target_metadata=target_metadata, compare_type=True
+        )
 
-        with alembic.context.begin_transaction():
-            alembic.context.run_migrations()
+        with context.begin_transaction():
+            context.run_migrations()
 
 
 def run_migrations_offline() -> None:
     """
     Run migrations in 'offline' mode.
     """
-    alembic.context.configure(url=str(settings.SQLALCHEMY_DATABASE_URI))
+    url = get_url()
+    context.configure(
+        url=url, target_metadata=target_metadata, literal_binds=True, compare_type=True
+    )
 
-    with alembic.context.begin_transaction():
-        alembic.context.run_migrations()
+    with context.begin_transaction():
+        context.run_migrations()
 
 
-if alembic.context.is_offline_mode():
+if context.is_offline_mode():
     logger.info("Running migrations offline")
     run_migrations_offline()
 else:
