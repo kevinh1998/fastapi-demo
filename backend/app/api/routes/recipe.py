@@ -22,6 +22,8 @@ async def create_recipe(
     recipe_in: RecipeCreate,
 ) -> RecipeCreate:
     recipe = await recipe_repo.create_recipe(recipe_in=recipe_in)
+    if not recipe:
+        raise HTTPException(status_code=409, detail="Recipe name already exists")
     return recipe
 
 

@@ -12,8 +12,12 @@ from app.schemas.recipe_ingredient import RecipeIngredient as RecipeIngredientSc
 
 
 class RecipeRepository(BaseRepository):
-    async def create_recipe(self, *, recipe_in: RecipeCreate) -> RecipeCreate:
+    async def create_recipe(self, *, recipe_in: RecipeCreate) -> Optional[RecipeCreate]:
         async with self.session() as session:
+            stmt = select(RecipeSchema).filter_by(name=recipe_in.name)
+            result = await session.execute(stmt)
+            if result.scalars().first():
+                return None
             recipe = RecipeSchema(
                 name=recipe_in.name,
                 dish_type=recipe_in.dish_type,
